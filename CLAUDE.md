@@ -36,7 +36,14 @@ changed during the build.
   UI and README now state plainly that it does not detect wrong subjects.
 - **The app grew from one view to four tabs**, adding Model Performance (metrics read from
   `reports/` at runtime, never hardcoded), Explainability (Grad-CAM, conv filters, feature
-  maps), and Method & Limitations.
+  maps), and Method & Limitations. A **light/dark toggle** was added later: both themes come
+  from one `PALETTES` dict of semantic tokens that drives the CSS *and* the matplotlib
+  figures. The theme is read from `session_state` at the top of the script, above the
+  stylesheet, while the toggle widget itself is drawn far below in the sidebar — legal
+  because a flip reruns the script from line 1. Chart functions take `theme` as an explicit
+  argument so it forms part of the `cache_data` key; without it, flipping the toggle would
+  serve the other theme's cached PNG. `reports/training_curves.png` is pre-rendered on a
+  white canvas and cannot follow the palette, so it sits on an explicit white card.
 - **Local training was added to the loop.** `data/` is now built locally so the app has real
   test images and evaluation can be re-run; the local split hashes identically to Colab's.
 - **The app needs an interpreter guard; bare `streamlit run` used to fail on this machine.**
