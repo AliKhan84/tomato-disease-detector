@@ -1,0 +1,24 @@
+# Dataset and derived splits -- rebuild with src/prepare_data.py
+archive.zip
+artifacts.zip
+raw_data/
+data/
+Dataset/
+
+# Local tooling (machine-specific permissions, not useful to anyone else)
+.claude/
+reports_local/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+
+# models/ and reports/ are deliberately NOT ignored. The trained checkpoint (24 MB) and the
+# evaluation artifacts are committed so the app runs straight after a clone, and so every
+# number in the README has its source in the repo rather than only in a write-up.

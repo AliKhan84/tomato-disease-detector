@@ -1,0 +1,18 @@
+# Must live at the REPO ROOT, not src/. Streamlit resolves .streamlit/config.toml
+# against the current working directory, not the script location -- a copy under src/
+# is silently ignored when launching from the repo root.
+#
+# Launch with:  streamlit run src/streamlit_app.py
+
+[theme]
+base = "light"
+primaryColor = "#1E4635"
+backgroundColor = "#EEF1E7"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#1F2A24"
+
+[server]
+maxUploadSize = 15
+
+[browser]
+gatherUsageStats = false

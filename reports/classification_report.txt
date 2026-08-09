@@ -1,0 +1,21 @@
+Macro F1: 0.9495
+Accuracy: 0.9488
+Test images: 3343
+
+                                      precision    recall  f1-score   support
+
+                      Bacterial_spot     0.9586    0.9481    0.9533       366
+                        Early_blight     0.9743    0.8230    0.8923       322
+                         Late_blight     0.9148    0.9495    0.9318       396
+                           Leaf_Mold     0.9625    0.9703    0.9664       370
+                  Septoria_leaf_spot     0.8960    0.9008    0.8984       373
+Spider_mites Two-spotted_spider_mite     0.9770    0.9725    0.9747       218
+                         Target_Spot     0.8849    0.9738    0.9272       229
+       Tomato_Yellow_Leaf_Curl_Virus     0.9725    0.9960    0.9841       249
+                 Tomato_mosaic_virus     0.9862    0.9760    0.9811       292
+                             healthy     0.9900    0.9876    0.9888       402
+                      powdery_mildew     0.9118    0.9841    0.9466       126
+
+                            accuracy                         0.9488      3343
+                           macro avg     0.9480    0.9529    0.9495      3343
+                        weighted avg     0.9500    0.9488    0.9485      3343

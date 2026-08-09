@@ -1,0 +1,12 @@
+# Local environment: evaluation + Streamlit app.
+# Training runs in Google Colab on its preinstalled TensorFlow -- do NOT pip install
+# tensorflow inside Colab, it breaks the preconfigured CUDA stack.
+#
+# TF >= 2.16 ships Keras 3, whose native `.keras` format is what the notebook saves.
+# Loading a Keras 3 checkpoint under Keras 2 fails, so keep this floor.
+tensorflow>=2.16,<3
+streamlit>=1.36,<2
+pillow>=10.3,<12
+scikit-learn>=1.4,<2
+matplotlib>=3.8,<4
+numpy>=1.26,<3
