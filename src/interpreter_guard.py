@@ -142,10 +142,41 @@ def _close_inherited_sockets() -> None:
             continue
 
 
+def _managed_host() -> str | None:
+    """Name the managed platform we appear to be running on, or None if local.
+
+    Scanning the filesystem for a second interpreter is a local-machine fix. On a hosted
+    runner there is exactly one environment, so the scan just burns a subprocess per
+    candidate and then reports "searched: (none found)" -- which hides the actual cause.
+    Streamlit Community Cloud clones the repo under /mount/src and builds its venv at
+    /home/adminuser/venv; either is a reliable tell.
+    """
+    if Path("/mount/src").is_dir() or Path("/home/adminuser/venv").is_dir():
+        return "Streamlit Community Cloud"
+    return None
+
+
 def ensure_tensorflow() -> None:
     """Re-exec under a TensorFlow-capable interpreter, or return if this one already is."""
     if importlib.util.find_spec("tensorflow") is not None:
         return
+
+    version = f"{sys.version_info.major}.{sys.version_info.minor}"
+
+    host = _managed_host()
+    if host:
+        # No second interpreter to find here, and no way to install one. The only real
+        # cause is a Python the TF wheels do not cover, so say that instead of scanning.
+        raise RuntimeError(
+            f"TensorFlow is not installed on this {host} container, which is running "
+            f"Python {version}.\n"
+            "TensorFlow publishes wheels for Python 3.10-3.13 only. If the version above "
+            "is outside that range, `pip install` cannot succeed here no matter what "
+            "requirements.txt says.\n"
+            "Fix: redeploy the app on Python 3.11, 3.12 or 3.13. The Python version is "
+            "chosen in Advanced settings at deploy time and cannot be changed afterwards, "
+            "so the app has to be deleted and deployed again. See README -> Deploying."
+        )
 
     if os.environ.get(SENTINEL):
         raise RuntimeError(
@@ -163,7 +194,7 @@ def ensure_tensorflow() -> None:
         print(
             f"\n[interpreter guard] {sys.executable}\n"
             "[interpreter guard]   has no TensorFlow, and never will -- TF ships no "
-            f"wheels for Python {sys.version_info.major}.{sys.version_info.minor}.\n"
+            f"wheels for Python {version}.\n"
             f"[interpreter guard] Restarting the server under:\n"
             f"[interpreter guard]   {python}\n"
             "[interpreter guard] Reload the page in a moment.\n",

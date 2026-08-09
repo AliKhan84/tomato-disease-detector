@@ -61,6 +61,31 @@ changed during the build.
   inherited descriptor and exits with `Port 8501 is not available` (this was observed, not
   theorised). `run_app.sh` remains as the explicit no-restart path.
 
+- **Streamlit Community Cloud needed three changes, one of which is not in the repo at all.**
+  The first deploy failed during dependency resolution — the container ran **Python 3.14.7**
+  and TensorFlow publishes wheels for 3.10–3.13 only, so `uv` and `pip` both reported no
+  matching ABI tag. Nothing in `requirements.txt` can fix that. The Python version is chosen
+  in the deploy-time **Advanced settings** dropdown and **cannot be changed in place** — the
+  app must be deleted and redeployed — and `runtime.txt` is a Heroku convention that
+  Community Cloud ignores, so pinning it from the repo is impossible. That step stays the
+  human's. What *is* in the repo: `requirements.txt` now installs **`tensorflow-cpu`**
+  (252 MB) instead of `tensorflow` (645 MB, drags in the CUDA stack) via a `sys_platform`
+  marker, because `tensorflow-cpu` ships Linux and Windows wheels **only** and a bare swap
+  would break macOS clones. And `interpreter_guard.py` gained a `_managed_host()` check:
+  its interpreter scan is a local-machine fix, so on a hosted runner it now skips the scan
+  and raises the actual cause instead of "searched: (none found)".
+- **Streamlit's own top bar was covering the page title.** `[data-testid="stHeader"]` is
+  fixed-position and paints itself from `config.toml`, which can declare only one base — so
+  under the dark palette it rendered as a light band across the top ~3.5rem of the page. It
+  is now forced transparent, with `.block-container` padding raised 2.2rem → 4.2rem so the
+  title clears the toolbar buttons that still live there. The pre-existing `#MainMenu,
+  footer` rule was dead code: current Streamlit uses `data-testid` nodes, verified by
+  grepping the installed bundle (`stHeader` 17 hits, `stAppDeployButton` 2,
+  `stAppViewBlockContainer` 0).
+- **The sidebar carries the leaf mark from the browser tab.** Emoji in a palette-driven
+  badge, not an SVG or a remote image — no asset file, no network fetch, so it renders the
+  same offline and on the deployed container.
+
 ## Verification performed
 
 1. `prepare_data.py` → per-class table, 32,534 images, counts sum correctly, no filename in

@@ -28,7 +28,8 @@ pip install -r requirements.txt
 streamlit run src/streamlit_app.py        # from the repo root
 ```
 
-TensorFlow publishes no wheels for Python 3.14, so use a **3.11–3.13** interpreter.
+TensorFlow publishes no wheels for Python 3.14, so use a **3.11–3.13** interpreter. The
+same constraint governs deployment — see [Deploying](#deploying-to-streamlit-community-cloud).
 
 Run it from the repo root: Streamlit resolves `.streamlit/config.toml` against the working
 directory, so launching from `src/` silently drops the theme.
@@ -41,6 +42,37 @@ it, download the dataset and run:
 unzip archive.zip -d raw_data
 python src/prepare_data.py --src raw_data
 ```
+
+---
+
+## Deploying to Streamlit Community Cloud
+
+**Set the Python version to 3.11, 3.12 or 3.13 in Advanced settings before you click
+Deploy.** This is the one step that cannot be recovered from later.
+
+Community Cloud now defaults new apps to Python 3.14, and TensorFlow publishes wheels for
+3.10–3.13 only. On 3.14 the build fails during dependency resolution with `No solution
+found when resolving dependencies` / `no wheels with a matching Python ABI tag`, before the
+app ever starts. No `requirements.txt` change can fix it — the wheels do not exist.
+
+There is also **no file that pins the Python version**: `runtime.txt` is a Heroku
+convention and Community Cloud ignores it. The version lives only in the deploy-time
+dropdown, and [cannot be changed in place][upgrade-python] — changing it means deleting the
+app and redeploying, so it is worth getting right the first time.
+
+1. Deploy → pick repo, branch `main`, entrypoint `src/streamlit_app.py`
+2. **Advanced settings → Python version → 3.11**
+3. Deploy
+
+If an app is already stuck on 3.14: note its subdomain, delete it, then redeploy with the
+same subdomain and the correct version.
+
+`requirements.txt` installs `tensorflow-cpu` (252 MB) rather than `tensorflow` (645 MB) on
+Linux and Windows. Community Cloud has no GPU, so the CUDA stack in the larger wheel is
+dead weight against a container that is memory-limited to begin with. macOS has no
+`tensorflow-cpu` build and falls back to plain `tensorflow` via an environment marker.
+
+[upgrade-python]: https://docs.streamlit.io/deploy/streamlit-community-cloud/manage-your-app/upgrade-python
 
 ---
 
@@ -63,9 +95,11 @@ would the model look if this were some other disease?*
 
 **Method & Limitations** — split strategy, architecture decisions, and the honest caveats.
 
-A light/dark toggle sits at the top of the sidebar. Both themes come from one set of
-semantic tokens that drive the CSS *and* the matplotlib figures, so charts re-render in the
-active palette instead of glowing white on a dark page.
+A light/dark toggle sits at the top of the sidebar, under the leaf mark. Both themes come
+from one set of semantic tokens that drive the CSS *and* the matplotlib figures, so charts
+re-render in the active palette instead of glowing white on a dark page. Streamlit's own
+fixed top bar is forced transparent, since `config.toml` can only declare one base and its
+light band would otherwise sit across the top of the dark theme.
 
 ---
 

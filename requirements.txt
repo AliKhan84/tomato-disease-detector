@@ -4,7 +4,14 @@
 #
 # TF >= 2.16 ships Keras 3, whose native `.keras` format is what the notebook saves.
 # Loading a Keras 3 checkpoint under Keras 2 fails, so keep this floor.
-tensorflow>=2.16,<3
+#
+# Inference here is CPU-only, so prefer the `tensorflow-cpu` wheel where it exists: 252 MB
+# against 645 MB for `tensorflow`, which drags in the whole CUDA stack. That gap is the
+# difference between fitting and not fitting in a free Streamlit Community Cloud container.
+# tensorflow-cpu publishes Linux and Windows wheels ONLY -- no macOS build -- so macOS falls
+# back to plain tensorflow rather than failing to resolve.
+tensorflow-cpu>=2.16,<3; sys_platform != "darwin"
+tensorflow>=2.16,<3; sys_platform == "darwin"
 streamlit>=1.36,<2
 pillow>=10.3,<12
 scikit-learn>=1.4,<2

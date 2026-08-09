@@ -127,8 +127,22 @@ CSS = f"""
 .stApp {{ background: {SAGE}; }}
 html, body, [class*="css"] {{ font-family: 'Work Sans', sans-serif; color: {INK}; }}
 
+/* Streamlit's own top bar is FIXED and paints itself from config.toml, which can only
+   declare one base -- so on the dark theme it renders as a light band across the top,
+   covering the first ~3.75rem of the page. Making it transparent lets the app background
+   show through in both themes; the extra block padding keeps the title out from under the
+   toolbar buttons (Deploy / status / menu) that still live in it and must stay clickable.
+   Legacy #MainMenu and footer selectors no longer match in current Streamlit -- the live
+   nodes are the data-testid ones. */
+[data-testid="stHeader"] {{
+  background: transparent; height: 3.5rem;
+}}
+[data-testid="stHeader"] * {{ color: {P['ink_mute']}; }}
+[data-testid="stToolbar"] {{ right: .6rem; }}
+[data-testid="stMainMenu"] svg, [data-testid="stStatusWidget"] {{ color: {P['ink_mute']}; }}
+[data-testid="stAppDeployButton"] {{ display: none; }}
 #MainMenu, footer {{ visibility: hidden; }}
-.block-container {{ padding-top: 2.2rem; max-width: 1240px; }}
+.block-container {{ padding-top: 4.2rem; max-width: 1240px; }}
 
 .scan-header {{
   border-bottom: 1px solid {P['border']};
@@ -156,6 +170,26 @@ h3.section {{
 }}
 .stTabs [aria-selected="true"] {{ color: {FOREST} !important; font-weight: 600; }}
 .stTabs [data-baseweb="tab-highlight"] {{ background: {FOREST}; }}
+
+/* Sidebar brand: the same leaf mark as the browser-tab icon, so the tab and the app read
+   as one thing. Emoji rather than an SVG or a remote image on purpose -- it needs no asset
+   file and no network round-trip, so it renders identically offline and on the deployed
+   container. The badge behind it is palette-driven and does follow the theme. */
+.brand {{ display: flex; align-items: center; gap: .7rem; margin: .2rem 0 1.1rem; }}
+.brand .mark {{
+  flex: 0 0 auto; width: 38px; height: 38px; border-radius: 11px;
+  background: {P['brand']}; display: inline-flex; align-items: center;
+  justify-content: center; font-size: 1.25rem; line-height: 1;
+  box-shadow: 0 2px 10px {P['shadow']};
+}}
+.brand .word {{
+  font-family: 'Fraunces', serif; font-weight: 600; color: {FOREST};
+  font-size: 1.12rem; line-height: 1.15; letter-spacing: -.01em;
+}}
+.brand .tag {{
+  font-size: .68rem; letter-spacing: .13em; text-transform: uppercase;
+  color: {P['ink_faint']}; font-weight: 600; margin-top: .12rem;
+}}
 
 .result-card {{
   background: {P['surface']}; border-radius: 14px; padding: 1.25rem 1.4rem 1.35rem;
@@ -572,6 +606,15 @@ samples = list_test_samples()
 # --- sidebar: image source ---------------------------------------------------
 
 with st.sidebar:
+    st.markdown(
+        '<div class="brand">'
+        '<span class="mark">🌿</span>'
+        '<span><div class="word">Leaf Scan</div>'
+        '<div class="tag">Tomato Disease</div></span>'
+        "</div>",
+        unsafe_allow_html=True,
+    )
+
     # Bound to the same session_state key the stylesheet read at the top of the script.
     # Flipping it reruns from line 1, so the new palette is already in place by the time
     # this widget is drawn again.
